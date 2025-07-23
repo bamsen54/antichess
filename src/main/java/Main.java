@@ -1,5 +1,4 @@
 
-
 import static com.raylib.Raylib.*;
 
 public class Main {
@@ -12,7 +11,6 @@ public class Main {
 
         AntiChess.run();
 
-        System.out.println(5);
 
         CloseWindow();
     }

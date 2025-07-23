@@ -108,34 +108,35 @@ public class Gui {
 
     public static void display_legal_moves() {
 
+
         if( ActivePiece.type == ' ' )
             return;
 
-        ArrayList<int[]> moves = Moves.get_legal_moves(AntiChess.main_game, ActivePiece.col, ActivePiece.row);
+        ArrayList<Move> moves = Moves.get_legal_moves( AntiChess.main_game, ActivePiece.col, ActivePiece.row );
         final int s = square_size;
 
-        for( int[] move: moves ) {
+        for( Move move: moves ) {
 
-            int col = move[0];
-            int row = move[1];
+            int col = move.to_col;
+            int row = move.to_row;
 
-            int col_pos = col;
-            int row_pos = row;
+            final int non_flipped_col = col;
+            final int non_flipped_row  = row;
 
-            if( AntiChess.flipped) {
+            if( AntiChess.flipped ) {
 
-                col_pos = 7 - col;
-                row_pos = 7 - row;
+                col = 7 - col;
+                row = 7 - row;
             }
 
-            final int x = Gui.board_position_x + col_pos * s;
-            final int y = Gui.board_position_y + row_pos * s;
+            final int x = Gui.board_position_x + s * col;
+            final int y = Gui.board_position_y + s * row;
 
-            if( AntiChess.main_game.board[row][col] == ' ' )
-                DrawCircle(x + s / 2, y + s / 2, (float) 0.12 * s, ORANGE);
+            if( AntiChess.main_game.board[non_flipped_row][non_flipped_col] == ' ')
+                DrawCircle(x + s / 2, y + s / 2, (float) (0.15 * s / 2), ORANGE);
 
             else
-                DrawRectangle(x, y, s, s, RED);
+                DrawRectangle(x, y, s, s, ORANGE);
         }
     }
 

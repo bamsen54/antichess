@@ -4,9 +4,32 @@ import java.util.ArrayList;
 // and for getting legal moves for each piece
 public class Moves {
 
-    // checks if type of moved is pawn, then if it does double move, the square
-    // between the start position and end position becomes en_passant_square
-    // iff a pawn of opposite color can "capture" that square.
+    public static Game capture_pawn_when_en_passant(Game game, int from_col, int from_row, int to_col, int to_row) {
+
+        if( game.en_passant_square.length != 2 )
+            return game;
+
+        Game game_with_captured_pawn = game.get_copy();
+
+        final char piece_type_to_move   = game_with_captured_pawn.board[from_row][from_col];
+        final String color_piece_to_move = Util.get_color_of_piece_type( piece_type_to_move );
+
+        if( Character.toUpperCase( piece_type_to_move ) != 'P' )
+            return game_with_captured_pawn;
+
+        if( to_col != game.en_passant_square[0] || to_row != game.en_passant_square[1] )
+            return game_with_captured_pawn;
+
+        if( color_piece_to_move.equals( "white" ) )
+            game_with_captured_pawn.board[from_row][to_col] = ' ';
+
+
+        else
+            game_with_captured_pawn.board[from_row][to_col] = ' ';
+
+        return game_with_captured_pawn;
+    }
+
     public static int[] get_en_passant_square(Game game, int from_col, int from_row, int to_col, int to_row) {
 
         final char type_at_col_row = game.board[from_row][from_col];
@@ -42,51 +65,35 @@ public class Moves {
 
         return new int[] {};
     }
-    
-    public static Game capture_pawn_when_en_passant(Game game, int from_col, int from_row, int to_col, int to_row) {
 
-        if( game.en_passant_square.length != 2 )
-            return game;
-
-        Game game_with_captured_pawn = game.get_copy();
-
-        final char piece_type_to_move   = game_with_captured_pawn.board[from_row][from_col];
-        final String color_piece_to_move = Util.get_color_of_piece_type( piece_type_to_move );
-
-        if( Character.toUpperCase( piece_type_to_move ) != 'P' )
-            return game_with_captured_pawn;
-
-        if( to_col != game.en_passant_square[0] || to_row != game.en_passant_square[1] )
-            return game_with_captured_pawn;
-
-        if( color_piece_to_move.equals( "white" ) )
-            game_with_captured_pawn.board[from_row][to_col] = ' ';
-
-
-        else
-            game_with_captured_pawn.board[from_row][to_col] = ' ';
-
-        return game_with_captured_pawn;
-    }
-
-    public static Game make_move(Game game, int from_col, int from_row, int to_col, int to_row) {
+    public static Game make_move(Game game, Move move) {
 
         Game game_with_move = game.get_copy();
 
-        // "capture" pawn when en passant, needs to be done before ame_with_move.board[from_row][from_col] = ' ';
-        // since it uses the fact that there is a pawn there
+        final int from_col = move.from_col;
+        final int from_row = move.from_row;
+        final int to_col   = move.to_col;
+        final int to_row   = move.to_row;
+
         game_with_move = capture_pawn_when_en_passant( game_with_move, from_col, from_row, to_col, to_row );
 
-        char piece_type_to_move = game.board[from_row][from_col];
+        game_with_move.en_passant_square = new int[] {};
+        game_with_move.en_passant_square = get_en_passant_square(game_with_move, from_col, from_row, to_col, to_row);
+
+
+        char type = game_with_move.board[from_row][from_col];
+
+        if( game_with_move.board[from_row][from_col] == 'P' && to_row == 0 )
+            type = 'N';
+
+        else if( game_with_move.board[from_row][from_col] == 'p' && to_row == 7)
+            type = 'n';
+
 
         game_with_move.board[from_row][from_col] = ' ';
-        game_with_move.board[to_row  ][to_col  ] = piece_type_to_move;
+        game_with_move.board[to_row][to_col]     = type;
 
 
-        // before move happens check if en passant happened
-        //game_with_move.en_passant_square = new int[]{};
-        game_with_move.en_passant_square = get_en_passant_square(game, from_col, from_row, to_col, to_row);
-        
         if( game_with_move.turn.equals("white") )
             game_with_move.turn = "black";
 
@@ -96,13 +103,12 @@ public class Moves {
         return game_with_move;
     }
 
-    // get legal moves supposing that a king is at (col, row)
-    public static ArrayList<int[]> get_king_moves(Game game, int col, int row) {
+    public static ArrayList<Move> get_king_moves(Game game, int col, int row) {
 
         final char type_at_col_row = game.board[row][col];
         final String color_of_piece_at_col_row = Util.get_color_of_piece_type( type_at_col_row );
 
-        ArrayList<int[]> moves = new ArrayList<>();
+        ArrayList<Move> moves = new ArrayList<>();
 
         int[][] steps = {{- 1, - 1}, {- 1, 0}, {- 1, 1}, {0, - 1}, {0, 1}, {1, - 1}, {1, 0}, {1, 1}};
 
@@ -111,37 +117,47 @@ public class Moves {
             final int col_move = col + step[0];
             final int row_move = row + step[1];
 
-            final int[] move = {col_move, row_move};
+            Move move = new Move(col, row, col_move, row_move);
 
-            if( !Util.check_if_move_is_on_board(move) )
+            if( !Util.check_if_square_is_on_board( new int[]{ col_move, row_move} ) )
                 continue;
 
             final char type_at_col_move_row_move = game.board[row_move][col_move];
             final String color_of_type_at_move_col_move_row = Util.get_color_of_piece_type(type_at_col_move_row_move);
 
-            // pseudo legal iff square does not have piece of same color
-            if( !color_of_piece_at_col_row.equals(color_of_type_at_move_col_move_row) )
-                moves.add(move);
+
+            if( type_at_col_move_row_move == ' ')
+                move.capture = false;
+
+            else if( !color_of_piece_at_col_row.equals( color_of_type_at_move_col_move_row ) )
+                move.capture = true;
+
+            else
+                continue;
+
+            moves.add(move);
         }
 
         return moves;
     }
 
-    public static ArrayList<int[]> get_moves_in_direction(Game game, int col, int row, int col_dir, int row_dir) {
+
+
+    public static ArrayList<Move> get_moves_in_direction(Game game, int col, int row, int col_dir, int row_dir) {
 
         final char type_at_col_row = game.board[row][col];
         final String color_of_piece_at_col_row = Util.get_color_of_piece_type( type_at_col_row );
 
-        ArrayList<int[]> moves = new ArrayList<>();
+        ArrayList<Move> moves = new ArrayList<>();
 
         for( int step = 1; step < 7; step++ ) {
 
             final int col_move = col + col_dir * step;
             final int row_move = row + row_dir * step;
 
-            final int[] move = {col_move, row_move};
+            Move move = new Move(col, row, col_move, row_move);
 
-            if( !Util.check_if_move_is_on_board(move) )
+            if( !Util.check_if_square_is_on_board( new int[] {col_move, row_move} ))
                 continue;
 
             final char type_at_col_move_row_move = game.board[row_move][col_move];
@@ -151,9 +167,12 @@ public class Moves {
             if( color_of_piece_at_col_row.equals( color_of_type_at_move_col_move_row ))
                 break;
 
-            // piece of opposite color at (col_move, row_move)
+            // piece of opposite color at (col_move, row_move) capture
             else if( !color_of_type_at_move_col_move_row.equals("empty") ) {
+
+                move.capture = true;
                 moves.add(move);
+
                 break;
             }
 
@@ -163,235 +182,305 @@ public class Moves {
         return moves;
     }
 
-    public static ArrayList<int[]> get_moves_in_straight_directions(Game game, int col, int row) {
+    public static ArrayList<Move> get_moves_in_straight_directions(Game game, int col, int row) {
 
-        ArrayList<int[]> moves = new ArrayList<>();
+        ArrayList<Move> moves = new ArrayList<>();
 
-        moves.addAll(get_moves_in_direction(game, col, row,   0, - 1));
-        moves.addAll(get_moves_in_direction(game, col, row,   1,   0));
-        moves.addAll(get_moves_in_direction(game, col, row,   0,   1));
-        moves.addAll(get_moves_in_direction(game, col, row, - 1,   0));
-
-        return moves;
-    }
-
-    public static ArrayList<int[]> get_moves_in_diagonal_directions(Game game, int col, int row) {
-
-        ArrayList<int[]> moves = new ArrayList<>();
-
-        moves.addAll(get_moves_in_direction(game, col, row,   1, - 1));
-        moves.addAll(get_moves_in_direction(game, col, row,   1,   1));
-        moves.addAll(get_moves_in_direction(game, col, row,   - 1,   1));
-        moves.addAll(get_moves_in_direction(game, col, row, - 1,    - 1));
+        moves.addAll( get_moves_in_direction( game,  col, row,   0, - 1) );
+        moves.addAll( get_moves_in_direction( game,  col, row,   1,   0) );
+        moves.addAll( get_moves_in_direction( game,  col, row,   0,   1) );
+        moves.addAll( get_moves_in_direction( game,  col, row, - 1,   0) );
 
         return moves;
     }
 
-    public static ArrayList<int[]> get_queen_moves(Game game, int col, int row) {
+    public static ArrayList<Move> get_moves_in_diagonal_directions(Game game, int col, int row) {
 
-        ArrayList<int[]> moves = new ArrayList<>();
+        ArrayList<Move> moves = new ArrayList<>();
 
-        moves.addAll( get_moves_in_straight_directions(game, col, row) );
-        moves.addAll( get_moves_in_diagonal_directions(game, col, row) );
+        moves.addAll( get_moves_in_direction( game,  col, row,   1, - 1) );
+        moves.addAll( get_moves_in_direction( game,  col, row,   1,   1) );
+        moves.addAll( get_moves_in_direction( game,  col, row, - 1,   1) );
+        moves.addAll( get_moves_in_direction( game,  col, row, - 1, - 1) );
 
         return moves;
     }
 
-    public static ArrayList<int[]> get_rook_moves(Game game, int col, int row) {
+    public static ArrayList<Move> get_queen_moves(Game game, int col, int row) {
 
-        return get_moves_in_straight_directions(game, col, row);
+        ArrayList<Move> moves = new ArrayList<>();
+
+        moves.addAll( get_moves_in_straight_directions( game, col, row ) );
+        moves.addAll( get_moves_in_diagonal_directions( game, col, row ) );
+
+        return moves;
     }
 
-    public static ArrayList<int[]> get_bishop_moves(Game game, int col, int row) {
+    public static ArrayList<Move> get_rook_moves(Game game, int row, int col) {
 
-        return get_moves_in_diagonal_directions(game, col, row);
+        return get_moves_in_straight_directions( game, row, col );
     }
 
-    public static ArrayList<int[]> get_knight_moves(Game game, int col, int row) {
+    public static ArrayList<Move> get_bishop_moves(Game game, int row, int col) {
 
-        ArrayList<int[]> moves = new ArrayList<>();
+        return get_moves_in_diagonal_directions( game, row, col );
+    }
+
+    public static ArrayList<Move> get_knight_moves(Game game, int col, int row) {
+
+        ArrayList<Move> moves = new ArrayList<>();
 
         final char type_at_col_row = game.board[row][col];
-        final String color_of_piece_at_col_row = Util.get_color_of_piece_type( type_at_col_row );
+        final String color_of_piece_at_col_row = Util.get_color_of_piece_type(type_at_col_row);
 
-        final int[] steps = { - 2, - 1, 1, 2 };
+        final int[] steps = {-2, -1, 1, 2};
 
-        for( int row_step: steps ) {
+        for (int row_step : steps) {
 
-            for( int col_step: steps ) {
+            for (int col_step : steps) {
 
-                if( Math.abs(row_step) == Math.abs(col_step) )
+                if (Math.abs(row_step) == Math.abs(col_step))
                     continue;
 
                 final int col_move = col + col_step;
                 final int row_move = row + row_step;
 
-                final int[] move = {col_move, row_move};
+                Move move = new Move(col, row, col_move, row_move);
 
-                if( !Util.check_if_move_is_on_board(move) )
+                if (!Util.check_if_square_is_on_board(new int[]{col_move, row_move}))
                     continue;
 
                 final char type_at_col_move_row_move = game.board[row_move][col_move];
                 final String color_of_type_at_move_col_move_row = Util.get_color_of_piece_type(type_at_col_move_row_move);
 
-                if( color_of_piece_at_col_row.equals( color_of_type_at_move_col_move_row ))
-                    continue;
+                boolean not_empty      = game.board[row_move][col_move] != ' ';
+                boolean opposite_color = !color_of_piece_at_col_row.equals(color_of_type_at_move_col_move_row );
 
-                moves.add(move);
-            }
-        }
+                if( !not_empty )
+                    moves.add( move );
 
-        return moves;
-    }
+                else if( opposite_color ) {
 
-    public static ArrayList<int[]> get_pawn_moves(Game game, int col, int row) {
-
-        ArrayList<int[]> moves = new ArrayList<>();
-
-        final char type_at_col_row = game.board[row][col];
-        final String color_of_piece_at_col_row = Util.get_color_of_piece_type( type_at_col_row );
-
-        int move_direction = ( color_of_piece_at_col_row.equals("white") ) ? - 1 : 1;
-
-        // standard "forward" move
-        if( color_of_piece_at_col_row.equals("white") ) {
-
-            if (row > 0 && game.board[row + move_direction][col] == ' ' )
-                moves.add(new int[]{col, row + move_direction});
-        }
-
-        else {
-
-            if (row < 7 && game.board[row + move_direction][col] == ' ' )
-                moves.add(new int[]{col, row + move_direction});
-        }
-
-        if( color_of_piece_at_col_row.equals("white") ) {
-
-            // double move (if at start square and (row + move_direction) and ( row + 2 * move_direction) are empty)
-            if( row == 6 && game.board[row + move_direction][col] == ' ' && game.board[row + 2 *  move_direction][col] == ' ')
-                moves.add(new int[] {col, row + 2 * move_direction});
-
-            // capture
-            if( row + move_direction >= 0) {
-
-                // sets a black piece at en passant square so that
-                // the ifs below are true
-                if( game.en_passant_square.length == 2 )
-                    game.board[game.en_passant_square[1]][game.en_passant_square[0]] = 'p';
-
-                if (col > 0 && Util.get_color_of_piece_type(game.board[row + move_direction][col - 1]).equals("black"))
-                    moves.add(new int[]{col - 1, row + move_direction});
-
-                if (col < 7 && Util.get_color_of_piece_type(game.board[row + move_direction][col + 1]).equals("black"))
-                    moves.add(new int[]{col + 1, row + move_direction});
-
-                // remove black piece at en passant square
-                if( game.en_passant_square.length == 2 )
-                    game.board[game.en_passant_square[1]][game.en_passant_square[0]] = ' ';
-
-            }
-        }
-
-        else {
-
-            if( row == 1 && game.board[row + move_direction][col] == ' ' && game.board[row + 2 *  move_direction][col] == ' ')
-                moves.add(new int[] {col, row + 2 * move_direction});
-
-            // capture
-
-            if( row + move_direction <= 7) {
-
-                // sets a white piece at en passant square so that
-                // the ifs below are true
-                if( game.en_passant_square.length == 2 )
-                    game.board[game.en_passant_square[1]][game.en_passant_square[0]] = 'P';
-
-                if (col > 0 && Util.get_color_of_piece_type(game.board[row + move_direction][col - 1]).equals("white"))
-                    moves.add(new int[]{col - 1, row + move_direction});
-
-                if (col < 7 && Util.get_color_of_piece_type(game.board[row + move_direction][col + 1]).equals("white"))
-                    moves.add(new int[]{col + 1, row + move_direction});
-
-                // remove white piece at en passant square
-                if( game.en_passant_square.length == 2 )
-                    game.board[game.en_passant_square[1]][game.en_passant_square[0]] = ' ';
-            }
-        }
-
-        return moves;
-    }
-
-    public static ArrayList<int[]> get_pseudo_legal_moves(Game game, int col, int row) {
-
-        final char type_at_col_row = game.board[row][col];
-
-        switch( Character.toUpperCase( type_at_col_row ) ) {
-
-            case 'K': return get_king_moves(   game, col, row);
-            case 'Q': return get_queen_moves(  game, col, row);
-            case 'R': return get_rook_moves(   game, col, row);
-            case 'B': return get_bishop_moves( game, col, row);
-            case 'N': return get_knight_moves( game, col, row);
-            case 'P': return get_pawn_moves(   game, col, row);
-
-            default: return new ArrayList<int[]>();
-        }
-    }
-
-    public static boolean check_if_move_is_capture(Game game, int from_col, int from_row, int to_col, int to_row) {
-
-        final char type = game.board[from_row][from_col];
-
-        if( type == ' ' )
-            return false;
-
-        if( Character.toUpperCase( type ) == 'P' )
-            return from_col != to_col;
-
-        //System.out.println("!!" + (game.board[to_row][to_col] != ' ') );
-        return game.board[to_row][to_col] != ' ';
-    }
-
-    // same as get_pseudo_legal_moves but if capture is possible it is mandatory
-    public static ArrayList<int[]> get_legal_moves(Game game, int col, int row) {
-
-        ArrayList<int[]> pseudo_legal_moves = get_pseudo_legal_moves( game, col, row );
-
-        boolean capture_is_possible = false;
-
-
-        final String color = Util.get_color_of_piece_type( game.board[row][col] );
-
-        for( int row_ = 0; row_ < 8; row_++ ) {
-
-            for( int col_ = 0; col_ < 8; col_++ ) {
-
-                final String color_of_piece_at_col_row = Util.get_color_of_piece_type( game.board[row_][col_] );
-
-                if( !color_of_piece_at_col_row.equals(color) )
-                    continue;
-
-                ArrayList<int[]> pseudo_legal_moves_of_piece = get_pseudo_legal_moves( game, col_, row_ );
-
-                for( int[] move: pseudo_legal_moves_of_piece) {
-
-                    if( check_if_move_is_capture(game, col_, row_, move[0], move[1]) )
-                        capture_is_possible = true;
+                    move.capture = true;
+                    moves.add( move);
                 }
             }
         }
 
-        //System.out.println(capture_is_possible);
+        return moves;
+    }
+
+    // takes a move returns 5 different versions in an ArrayList with different
+    // promote_to the different 5 pieces
+    //
+    public static ArrayList<Move> get_move_list_with_all_promotions(Move move) {
+
+        Move promote_to_king   = move.get_copy();
+        Move promote_to_queen  = move.get_copy();
+        Move promote_to_rook   = move.get_copy();
+        Move promote_to_bishop = move.get_copy();
+        Move promote_to_knight = move.get_copy();
+
+        promote_to_king.promote_to  = "K";
+        promote_to_queen.promote_to = "Q";
+        promote_to_rook.promote_to  = "R";
+        promote_to_bishop.promote_to = "B";
+        promote_to_knight.promote_to = "N";
+
+
+        ArrayList<Move> all_promotions = new ArrayList<>();
+
+        all_promotions.add( promote_to_king );
+        all_promotions.add( promote_to_queen );
+        all_promotions.add( promote_to_rook );
+        all_promotions.add( promote_to_bishop );
+        all_promotions.add( promote_to_knight );
+
+        return all_promotions;
+    }
+
+    public static ArrayList<Move> get_pawn_moves(Game game, int col, int row) {
+
+        ArrayList<Move> moves = new ArrayList<>();
+
+        int[] move_square;
+
+
+        final char type_at_col_row = game.board[row][col];
+        final String color_of_piece_at_col_row = Util.get_color_of_piece_type( type_at_col_row );
+
+        boolean pawn_start_rank = false;
+
+        if( color_of_piece_at_col_row.equals( "white" ) && row == 6 )
+            pawn_start_rank = true;
+
+        else if( color_of_piece_at_col_row.equals( "black" ) && row == 1  )
+            pawn_start_rank = true;
+
+
+        int forward_direction;
+
+        if( color_of_piece_at_col_row.equals( "white" ) )
+            forward_direction = - 1;
+
+        else
+            forward_direction = 1;
+
+        // standard forward move
+        move_square = new int[]{col, row + forward_direction};
+        Move standard_move = new Move( col, row, col, row + forward_direction);
+        if( Util.check_if_square_is_on_board( move_square ) && Util.check_square_is_empty(game,  move_square ) ) {
+
+            if( Util.check_if_piece_is_on_back_rank( move_square ))
+                moves.addAll( get_move_list_with_all_promotions( standard_move ) );
+
+            else
+                moves.add( standard_move );
+        }
+
+        // double move
+        move_square      = new int[] {col, row + 2 * forward_direction};
+        Move double_move = new Move( col, row, col, row + 2 * forward_direction );
+
+        // if moves is not empty that means that standard move is legal and therefore
+        // first square in double move is empty
+        if( !moves.isEmpty() && pawn_start_rank )
+            moves.add( double_move );
+
+        // capture left
+        move_square    = new int[] {col - 1, row + forward_direction};
+        Move left_move = new Move( col, row, col - 1, row + forward_direction );
+
+        if( Util.check_if_square_is_on_board( move_square ) ) {
+
+            final char left_type = game.board[row + forward_direction][col - 1];
+
+            boolean not_empty      = !Util.check_square_is_empty( game,  move_square );
+            boolean opposite_color = Util.is_different_color( left_type, type_at_col_row);
+
+            if( not_empty && opposite_color ) {
+
+                left_move.capture = true;
+
+                if( row + forward_direction == 0 || row + forward_direction == 7 )
+                    moves.addAll( get_move_list_with_all_promotions( left_move ));
+
+                else
+                    moves.add( left_move );
+            }
+        }
+
+        // capture right
+        move_square     = new int[] {col + 1, row + forward_direction};
+        Move right_move = new Move( col, row, col + 1, row + forward_direction );
+
+        if( Util.check_if_square_is_on_board( move_square ) ) {
+
+            final char right_type = game.board[row + forward_direction][col + 1];
+
+            boolean not_empty      = !Util.check_square_is_empty( game,  move_square );
+            boolean opposite_color = Util.is_different_color( right_type, type_at_col_row);
+
+            if( not_empty && opposite_color ) {
+
+                right_move.capture = true;
+
+                if( row + forward_direction == 0 || row + forward_direction == 7 )
+                    moves.addAll( get_move_list_with_all_promotions( right_move ));
+
+                else
+                    moves.add( right_move );
+            }
+        }
+
+        // en passant
+
+        if( game.en_passant_square.length != 2)
+            return moves;
+
+        Move en_passant_left  = new Move( col, row, col - 1, row + forward_direction);
+        Move en_passant_right = new Move( col, row, col + 1, row + forward_direction);
+
+        en_passant_left.en_passant  = true;
+        en_passant_left.capture     = true;
+
+        en_passant_right.en_passant = true;
+        en_passant_right.capture    = true;
+
+        int[] en_passant = game.en_passant_square;
+
+        int[] capture_left  = {col -1 , row + forward_direction};
+        int[] capture_right = {col + 1, row + forward_direction};
+
+        if( Util.check_if_square_are_equal( capture_left, en_passant ) )
+            moves.add( en_passant_left );
+
+        if( Util.check_if_square_are_equal( capture_right, en_passant ) )
+            moves.add( en_passant_right );
+
+        return moves;
+    }
+
+    public static ArrayList<Move> get_pseudo_legal_moves(Game game, int col, int row) {
+
+        final char type = Character.toUpperCase( game.board[row][col] );
+
+        ArrayList<Move> default_return = new ArrayList<>();
+
+        return switch (type) {
+            case 'K' -> get_king_moves(game, col, row);
+            case 'Q' -> get_queen_moves(game, col, row);
+            case 'R' -> get_rook_moves(game, col, row);
+            case 'B' -> get_bishop_moves(game, col, row);
+            case 'N' -> get_knight_moves(game, col, row);
+            case 'P' -> get_pawn_moves(game, col, row);
+            default  -> default_return;
+        };
+    }
+
+    public static ArrayList<Move> get_legal_moves(Game game, int col, int row) {
+
+        if( !AntiChess.capture_is_mandatory )
+            return get_pseudo_legal_moves( game, col, row );
+
+        final char type = game.board[row][col];
+
+        boolean capture_is_possible = false;
+
+        for( int r = 0; r < 8; r++ ) {
+
+            for( int c = 0; c < 8; c++ ) {
+
+                final char type_at_c_r = game.board[r][c];
+
+                if( Util.is_different_color( type, type_at_c_r ) )
+                    continue;
+
+                ArrayList<Move> pseudo_legal = get_pseudo_legal_moves( game, c, r );
+
+                for( Move move: pseudo_legal ) {
+
+                    if( move.capture ) {
+
+                        capture_is_possible = true;
+
+                        break;
+                    }
+
+                }
+            }
+        }
+
+        ArrayList<Move> pseudo_legal = get_pseudo_legal_moves(game, col, row);
+
         if( !capture_is_possible )
-            return pseudo_legal_moves;
+            return pseudo_legal;
 
+        ArrayList<Move> legal_moves = new ArrayList<>();
 
-        ArrayList<int[]> legal_moves = new ArrayList<>();
+        for( Move move: pseudo_legal ) {
 
-        for( int[] move: pseudo_legal_moves ) {
-
-            if( check_if_move_is_capture( game, col, row, move[0], move[1] ) )
+            if( move.capture )
                 legal_moves.add( move );
         }
 

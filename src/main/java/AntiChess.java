@@ -7,6 +7,12 @@ import static com.raylib.Raylib.*;
 
 public class AntiChess {
 
+    // for debug
+    static boolean capture_is_mandatory = true;
+
+    // "game" for normal play "promotion" for promotion and "gameover" etc
+    static String program_state = "game";
+
     static Game main_game = new Game();
 
     final static int width           = GetScreenWidth();
@@ -64,9 +70,24 @@ public class AntiChess {
 
             //Moves.get_pseudo_legal_moves(main_game, ActivePiece.col, ActivePiece.row);
         }
+
+        if( ActivePiece.type != ' ' ) {
+
+            ArrayList<Move> moves = Moves.get_legal_moves(main_game, ActivePiece.col, ActivePiece.row);
+
+            for (Move move : moves) {
+                System.out.println(move);
+
+            }
+
+        }
     }
 
     public static void start_piece_drag() {
+
+        if( !program_state.equals("game") )
+            return;
+
 
         Vector2 mouse = GetMousePosition();
 
@@ -90,8 +111,9 @@ public class AntiChess {
         if( main_game.board[row][col] == ' ' )
             return;
 
+
         if( !Util.get_color_of_piece_type(main_game.board[row][col]).equals(main_game.turn) )
-            return;
+           return;
 
         ActivePiece.type  = main_game.board[row][col];
         ActivePiece.col   = col;
@@ -101,6 +123,9 @@ public class AntiChess {
 
     // moves active piece to drop square if it is a legal move
     public static void move_active_piece_to_drop_square() {
+
+        if( !program_state.equals("game") )
+            return;
 
         // we always want to clear ActivePiece
         // when mouse is released so we store the info here
@@ -128,12 +153,19 @@ public class AntiChess {
         if( col < 0 || col > 7 || row < 0 || row > 7 )
             return;
 
-        ArrayList<int[]> legal_moves = Moves.get_legal_moves(main_game, col_active, row_active);
-        final int[] move = {col, row};
+        ArrayList<Move> legal_moves = Moves.get_legal_moves(main_game, col_active, row_active);
 
-        if( !Util.check_if_array_list_contains_move( legal_moves, move) )
+        // capture and promote doesn't matter here
+        Move move = new Move(col_active, row_active, col, row);
+
+        if( !Util.check_if_move_square_is_in_moves( legal_moves, move) )
            return;
 
-        main_game = Moves.make_move(main_game, col_active, row_active, col, row);
+        if( main_game.board[row][col] != ' ' )
+            move.capture = true;
+
+        System.out.println(move);
+
+        main_game = Moves.make_move(main_game, move);
     }
 }
