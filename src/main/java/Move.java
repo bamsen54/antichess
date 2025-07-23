@@ -10,7 +10,7 @@ public class Move {
 
     public boolean capture;
     public boolean en_passant;
-    public String promote_to;
+    public char promote_to;
 
     Move(int from_col, int from_row, int to_col, int to_row) {
 
@@ -21,7 +21,7 @@ public class Move {
 
         this.capture  = false;
         this.en_passant = false;
-        this.promote_to = "";
+        this.promote_to = ' ';
     }
 
     public Move get_copy() {
@@ -39,7 +39,6 @@ public class Move {
 
         StringBuilder tostring = new StringBuilder();
 
-
         tostring.append("(").append(this.from_col).append(", ").append(this.from_row).append(") -> ");
         tostring.append("(").append(this.to_col).append(", ").append(this.to_row).append(") ");
 
@@ -49,7 +48,7 @@ public class Move {
         if( this.en_passant )
             tostring.append("en passant ");
 
-        if( !this.promote_to.isEmpty() )
+        if( this.promote_to != ' ' )
             tostring.append("promote: ").append(this.promote_to).append(" ");
 
         return tostring.toString();

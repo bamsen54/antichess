@@ -108,7 +108,6 @@ public class Gui {
 
     public static void display_legal_moves() {
 
-
         if( ActivePiece.type == ' ' )
             return;
 
@@ -158,11 +157,140 @@ public class Gui {
             row = 7 - row;
         }
 
-
-
         final int x = Gui.board_position_x + col * s;
         final int y = Gui.board_position_y + row * s;
 
         DrawRectangle(x, y, s, s, YELLOW);
+    }
+
+    public static void display_promotion_choices( Move promotion_move ) {
+
+        final int to_row = promotion_move.to_row;
+        final int to_col = promotion_move.to_col;
+
+        if( to_row == 0 ) {
+
+            char[] icons_to_draw = {'K', 'Q', 'R', 'B', 'N'};
+
+            for( int k = 0; k < icons_to_draw.length; k++ ) {
+
+                int row = k;
+                int col = to_col;
+
+                if( AntiChess.flipped ) {
+
+                    col = 7 - col;
+                    row = 7 - row;
+                }
+
+                final int x = board_position_x + col * square_size;
+                final int y = board_position_y + row * square_size;
+
+                DrawRectangle( x, y, square_size, square_size, DARKGRAY);
+
+                DrawTexture( icons.get( icons_to_draw[k] ), x, y, WHITE) ;
+            }
+
+            return;
+        }
+
+        char[] icons_to_draw = {'k', 'q', 'r', 'b', 'n'};
+
+        for( int k = 0; k < icons_to_draw.length; k++ ) {
+
+            int row = k;
+            int col = to_col;
+
+            if( AntiChess.flipped ) {
+
+                col = 7 - col;
+                row = 7 - row;
+            }
+
+            final int x = board_position_x + col * square_size;
+            final int y = board_position_y + (7 - row)   * square_size;
+
+            DrawRectangle( x, y, square_size, square_size, DARKGRAY);
+
+            DrawTexture( icons.get( icons_to_draw[k] ), x, y, WHITE) ;
+        }
+    }
+
+    public static void choose_promotion() {
+
+        Vector2 mouse = GetMousePosition();
+
+        final int x = (int) mouse.x();
+        final int y = (int) mouse.y();
+
+        int col_clicked = (int) Math.floor( (double) (x - Gui.board_position_x) / Gui.square_size );
+        int row_clicked = (int) Math.floor( (double) (y - Gui.board_position_y) / Gui.square_size );
+
+        if( AntiChess.flipped ) {
+
+            col_clicked = 7 - col_clicked;
+            row_clicked = 7 - row_clicked;
+        }
+
+        int to_col = AntiChess.promotion_move.to_col;
+        int to_row = AntiChess.promotion_move.to_row;
+
+        if( col_clicked != to_col )
+            return;
+
+        if( to_row == 0 ) {
+
+            if( row_clicked == 0 )
+                AntiChess.promotion_move.promote_to = 'K';
+
+            else if( row_clicked == 1 )
+                AntiChess.promotion_move.promote_to = 'Q';
+
+            else if( row_clicked == 2 )
+                AntiChess.promotion_move.promote_to = 'R';
+
+            else if( row_clicked == 3 )
+                AntiChess.promotion_move.promote_to = 'B';
+
+            else if( row_clicked == 4 )
+                AntiChess.promotion_move.promote_to = 'N';
+
+            if( AntiChess.promotion_move.promote_to != ' ' ) {
+
+                AntiChess.main_game = Moves.make_move(AntiChess.main_game, AntiChess.promotion_move);
+
+                AntiChess.promotion_move = null;
+
+                AntiChess.program_state = "game";
+            }
+
+            return;
+        }
+
+        if( row_clicked == 7 )
+            AntiChess.promotion_move.promote_to = 'k';
+
+        else if( row_clicked == 6 )
+            AntiChess.promotion_move.promote_to = 'q';
+
+        else if( row_clicked == 5 )
+            AntiChess.promotion_move.promote_to = 'r';
+
+        else if( row_clicked == 4 )
+            AntiChess.promotion_move.promote_to = 'b';
+
+        else if( row_clicked == 3 )
+            AntiChess.promotion_move.promote_to = 'n';
+
+        if( AntiChess.promotion_move.promote_to != ' ' ) {
+
+            AntiChess.main_game = Moves.make_move(AntiChess.main_game, AntiChess.promotion_move);
+
+            AntiChess.promotion_move = null;
+
+            AntiChess.program_state = "game";
+        }
+
+
     }
 }

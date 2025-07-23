@@ -83,11 +83,14 @@ public class Moves {
 
         char type = game_with_move.board[from_row][from_col];
 
-        if( game_with_move.board[from_row][from_col] == 'P' && to_row == 0 )
-            type = 'N';
+        //if( game_with_move.board[from_row][from_col] == 'P' && to_row == 0 )
+            //type = 'N';
 
-        else if( game_with_move.board[from_row][from_col] == 'p' && to_row == 7)
-            type = 'n';
+        //else if( game_with_move.board[from_row][from_col] == 'p' && to_row == 7)
+            //type = 'n';
+
+        if( move.promote_to != ' ')
+            type = move.promote_to;
 
 
         game_with_move.board[from_row][from_col] = ' ';
@@ -140,8 +143,6 @@ public class Moves {
 
         return moves;
     }
-
-
 
     public static ArrayList<Move> get_moves_in_direction(Game game, int col, int row, int col_dir, int row_dir) {
 
@@ -281,11 +282,11 @@ public class Moves {
         Move promote_to_bishop = move.get_copy();
         Move promote_to_knight = move.get_copy();
 
-        promote_to_king.promote_to  = "K";
-        promote_to_queen.promote_to = "Q";
-        promote_to_rook.promote_to  = "R";
-        promote_to_bishop.promote_to = "B";
-        promote_to_knight.promote_to = "N";
+        promote_to_king.promote_to  = 'K';
+        promote_to_queen.promote_to = 'Q';
+        promote_to_rook.promote_to  = 'R';
+        promote_to_bishop.promote_to = 'B';
+        promote_to_knight.promote_to = 'N';
 
 
         ArrayList<Move> all_promotions = new ArrayList<>();

@@ -8,12 +8,15 @@ import static com.raylib.Raylib.*;
 public class AntiChess {
 
     // for debug
-    static boolean capture_is_mandatory = true;
+    static boolean capture_is_mandatory = false;
 
     // "game" for normal play "promotion" for promotion and "gameover" etc
     static String program_state = "game";
 
     static Game main_game = new Game();
+
+    // stores promotion info
+    static Move promotion_move;
 
     final static int width           = GetScreenWidth();
     final static int height          = GetScreenHeight();
@@ -59,6 +62,11 @@ public class AntiChess {
             flipped = !flipped;
         }
 
+        mouse_pressed();
+
+        if( program_state.equals( "promotion" ) )
+            Gui.display_promotion_choices( promotion_move );
+
         if( ActivePiece.type != ' ' ) {
 
             int[] mouse_position = Raylib.mouse_position();
@@ -75,10 +83,10 @@ public class AntiChess {
 
             ArrayList<Move> moves = Moves.get_legal_moves(main_game, ActivePiece.col, ActivePiece.row);
 
-            for (Move move : moves) {
-                System.out.println(move);
+            //for (Move move : moves) {
+                //System.out.println(move);
 
-            }
+            //}
 
         }
     }
@@ -164,8 +172,36 @@ public class AntiChess {
         if( main_game.board[row][col] != ' ' )
             move.capture = true;
 
-        System.out.println(move);
+        // in both these cases the move is stored in promotion move
+        // then the moves is finalized when type to promote to is made
+        // we do move the pawn to the square for aesthetics
+        if( type_active == 'P' && row == 0 ) {
 
-        main_game = Moves.make_move(main_game, move);
+            program_state = "promotion";
+
+            promotion_move = move.get_copy();
+
+            main_game.board[row_active][col_active] = ' ';
+            main_game.board[row][col]               = 'P';
+        }
+
+        else if( type_active == 'p' && row == 7 ) {
+
+            program_state = "promotion";
+
+            promotion_move = move.get_copy();
+
+            main_game.board[row_active][col_active] = ' ';
+            main_game.board[row][col]               = 'P';
+        }
+
+        else
+            main_game = Moves.make_move(main_game, move);
+    }
+
+    public static void mouse_pressed() {
+
+        if( promotion_move != null && IsMouseButtonPressed(0) )
+            Gui.choose_promotion();
     }
 }
