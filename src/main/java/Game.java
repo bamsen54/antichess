@@ -7,12 +7,12 @@ import java.util.ArrayList;
 public class Game {
 
     public char[][] board = {{'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'},
-                             {'p', 'p', 'p', 'p', 'p', 'p', 'P', 'p'},
+                             {'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'},
                              {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
                              {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
                              {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
                              {' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '},
-                             {'P', 'p', 'P', 'P', 'P', 'P', 'P', 'P'},
+                             {'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'},
                              {'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}
                             };
 
@@ -21,6 +21,10 @@ public class Game {
     // if en passant is possible, this is the en passant square.
     // en passant square is the square that pawn "captures" but there is no piece there
     public int[] en_passant_square = {};
+
+    public int half_move_clock  = 0;
+    public int full_move_number = 1;
+
     public String toString() {
 
         StringBuilder to_string = new StringBuilder();
@@ -42,6 +46,11 @@ public class Game {
             to_string.append("\n");
         }
 
+        to_string.append( "en passant: " ).append( Util.square_to_algebraic( this.en_passant_square ) ).append("\n");
+        to_string.append( "half move clock: " ).append( this.half_move_clock ).append("\n");
+        to_string.append( "full move number: " ).append( this.full_move_number ).append("\n");
+
+
         return to_string.toString();
     }
 
@@ -58,6 +67,9 @@ public class Game {
         copy.turn = this.turn;
 
         copy.en_passant_square = this.en_passant_square;
+
+        copy.half_move_clock  = this.half_move_clock;
+        copy.full_move_number = this.full_move_number;
 
         return copy;
     }

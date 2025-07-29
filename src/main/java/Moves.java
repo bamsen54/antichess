@@ -66,6 +66,30 @@ public class Moves {
         return new int[] {};
     }
 
+    public static Game add_to_half_move_clock(Game game, int from_col, int from_row, int to_col, int to_row) {
+
+        Game updated_half_move_clock = game.get_copy();
+
+        final char type = game.board[from_row][from_col];
+
+        System.out.println(type);
+
+
+        // pawn move including en passant
+        if( type == 'P' || type == 'p' )
+            updated_half_move_clock.half_move_clock = 0;
+
+        // capture
+        else if( game.board[to_row][to_col] != ' ')
+            updated_half_move_clock.half_move_clock = 0;
+
+        // neither
+        else
+            updated_half_move_clock.half_move_clock++;
+
+        return updated_half_move_clock;
+    }
+
     public static Game make_move(Game game, Move move) {
 
         Game game_with_move = game.get_copy();
@@ -83,18 +107,16 @@ public class Moves {
 
         char type = game_with_move.board[from_row][from_col];
 
-        //if( game_with_move.board[from_row][from_col] == 'P' && to_row == 0 )
-            //type = 'N';
-
-        //else if( game_with_move.board[from_row][from_col] == 'p' && to_row == 7)
-            //type = 'n';
+        game_with_move = add_to_half_move_clock( game_with_move, from_col, from_row, to_col, to_row );
 
         if( move.promote_to != ' ')
             type = move.promote_to;
 
-
         game_with_move.board[from_row][from_col] = ' ';
         game_with_move.board[to_row][to_col]     = type;
+
+        if( game_with_move.turn.equals( "black" ) )
+            game_with_move.full_move_number++;
 
 
         if( game_with_move.turn.equals("white") )
@@ -102,6 +124,8 @@ public class Moves {
 
         else
             game_with_move.turn = "white";
+
+        System.out.println(Notation.fen( game_with_move ));
 
         return game_with_move;
     }
@@ -486,5 +510,39 @@ public class Moves {
         }
 
         return legal_moves;
+    }
+
+    public static ArrayList<Move> get_all_legal_moves_for_color(Game game, String color) {
+
+        ArrayList<Move> moves = new ArrayList<>();
+
+        for( int row = 0; row < 8; row++ ) {
+
+            for( int col = 0; col < 8; col++ ) {
+
+                final char type = game.board[row][col];
+
+                final String color_of_type = Util.get_color_of_piece_type( type );
+
+                if( !color_of_type.equals( color) )
+                    continue;
+
+                moves.addAll( get_legal_moves( game, col, row) );
+            }
+        }
+
+        return moves;
+    }
+
+    public static ArrayList<Game> get_all_possible_boards_from_position(Game game, String color) {
+
+        ArrayList<Game> games = new ArrayList<>();
+
+        ArrayList<Move> moves = get_all_legal_moves_for_color( game, color );
+
+        for( Move move: moves)
+            games.add( make_move( game, move ) );
+
+        return games;
     }
 }

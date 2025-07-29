@@ -51,18 +51,19 @@ public class AntiChess {
         Gui.display_legal_moves();
         Gui.draw_pieces(main_game);
 
-        if( IsMouseButtonPressed(0) && ActivePiece.type == ' ' )
-            start_piece_drag();
-
-        if( IsMouseButtonReleased(0) && ActivePiece.type != ' ' )
-            move_active_piece_to_drop_square();
+        mouse_pressed();
 
         if( IsKeyPressed(KEY_F) ) {
 
             flipped = !flipped;
         }
 
-        mouse_pressed();
+        if( IsKeyPressed(KEY_SPACE) ) {
+
+            //String f = Notation.fen(main_game);
+
+            main_game = Notation.set_game_with_fen( "rnbqkb1r/ppp1pppp/7n/3pP3/8/8/PPPP1PPP/RNBQKBNR w - - 0 3" );
+        }
 
         if( program_state.equals( "promotion" ) )
             Gui.display_promotion_choices( promotion_move );
@@ -77,17 +78,6 @@ public class AntiChess {
             DrawTexture(Gui.icons.get(ActivePiece.type), x - Gui.square_size / 2, y - Gui.square_size / 2, WHITE);
 
             //Moves.get_pseudo_legal_moves(main_game, ActivePiece.col, ActivePiece.row);
-        }
-
-        if( ActivePiece.type != ' ' ) {
-
-            ArrayList<Move> moves = Moves.get_legal_moves(main_game, ActivePiece.col, ActivePiece.row);
-
-            //for (Move move : moves) {
-                //System.out.println(move);
-
-            //}
-
         }
     }
 
@@ -203,5 +193,11 @@ public class AntiChess {
 
         if( promotion_move != null && IsMouseButtonPressed(0) )
             Gui.choose_promotion();
+
+        if( IsMouseButtonPressed(0) && ActivePiece.type == ' ' )
+            start_piece_drag();
+
+        if( IsMouseButtonReleased(0) && ActivePiece.type != ' ' )
+            move_active_piece_to_drop_square();
     }
 }

@@ -65,4 +65,46 @@ public class Util {
 
         return false;
     }
+
+    // 1 -> a 2 -> b ... 8 -> f
+    public static char number_to_letter_on_chess_board(int number) {
+
+        return (char) (number + 97 - 1);
+    }
+
+    public static int letter_to_number_on_chess_board(char character) {
+
+        return (int) character - 97;
+    }
+
+    public static String square_to_algebraic(int[] square) {
+
+        StringBuilder algebraic = new StringBuilder();
+
+        if( square.length != 2 )
+            return "";
+
+        final int col = square[0];
+        final int row = square[1];
+
+        algebraic.append( number_to_letter_on_chess_board( col + 1 ) );
+        algebraic.append( 8 - row );
+
+        return algebraic.toString();
+    }
+
+    public static int[] algebraic_to_square(String algebraic) {
+
+        int[] square = new int[2];
+
+        final char letter = algebraic.charAt(0);
+        final int number  = algebraic.charAt(1) - 48;
+
+        square[0] = letter_to_number_on_chess_board( letter );
+        square[1] = 8 - number;
+
+        System.out.println(square[0] + " " + square[1]);
+
+        return square;
+    }
 }
