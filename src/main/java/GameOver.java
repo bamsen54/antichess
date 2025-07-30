@@ -189,6 +189,12 @@ public class GameOver {
     // 'b' if black won
     public static String get_game_over_status(Game game) {
 
+        if( check_win_by_no_move( game ).equals( "white won" ) )
+            return "white won";
+
+        if( check_win_by_no_move( game ).equals( "black won" ))
+            return "black won";
+
         if( check_insuficcient_material( game ).equals( "draw insufficient material" ) )
             return "draw insufficient material";
 
@@ -199,5 +205,10 @@ public class GameOver {
             return "draw by 50 move rule";
 
         return "";
+    }
+
+    public static boolean is_game_over(Game game) {
+
+        return !get_game_over_status( game ).isEmpty();
     }
 }

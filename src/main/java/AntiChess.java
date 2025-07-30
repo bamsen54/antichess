@@ -8,7 +8,7 @@ import static com.raylib.Raylib.*;
 public class AntiChess {
 
     // for debug
-    static boolean capture_is_mandatory = false;
+    static boolean capture_is_mandatory = true;
 
     // "game" for normal play "promotion" for promotion and "gameover" etc
     static String program_state = "game";
@@ -51,9 +51,10 @@ public class AntiChess {
 
         DrawFPS(20, 20);
         Gui.draw_board();
-        Gui.display_en_passant_square(main_game);
+        Gui.display_en_passant_square( main_game );
         Gui.display_legal_moves();
-        Gui.draw_pieces(main_game);
+        Gui.draw_pieces( main_game );
+        Gui.draw_game_information( main_game );
 
         mouse_pressed();
 
@@ -64,12 +65,8 @@ public class AntiChess {
 
         if( IsKeyPressed(KEY_SPACE) ) {
 
-            System.out.println("three-fold: " +  GameOver.check_threefold_repetition( main_game ) );
-
+            System.out.println("space");
         }
-
-        if( !GameOver.get_game_over_status( main_game).isEmpty() )
-            System.out.println( GameOver.get_game_over_status( main_game ) );
 
         if( program_state.equals( "promotion" ) )
             Gui.display_promotion_choices( promotion_move );
@@ -91,7 +88,6 @@ public class AntiChess {
 
         if( !program_state.equals("game") )
             return;
-
 
         Vector2 mouse = GetMousePosition();
 
@@ -193,6 +189,9 @@ public class AntiChess {
 
         else
             main_game = Moves.make_move(main_game, move);
+
+        if( GameOver.is_game_over( main_game ) && !program_state.equals("promotion") )
+            program_state = "game over";
     }
 
     public static void mouse_pressed() {

@@ -10,12 +10,16 @@ import java.util.HashMap;
 
 public class Gui {
 
+    public static String game_information = "white to move";
+
     public static int board_position_x;
     public static int board_position_y;
     public static int square_size;
 
     public static Color light = Raylib.color(241, 242, 249);
     public static Color dark  = Raylib.color(53, 53, 64);
+
+    public static int font_size = 20;
 
     public static HashMap<Character, Texture> icons = new HashMap<Character, Texture>();
 
@@ -291,6 +295,25 @@ public class Gui {
             AntiChess.program_state = "game";
         }
 
+        if( GameOver.is_game_over( AntiChess.main_game ) )
+            AntiChess.program_state = "game over";
+    }
 
+    public static void draw_game_information(Game game) {
+
+        final int width  = GetScreenWidth();
+        final int height = GetScreenHeight();
+
+        if( AntiChess.program_state.equals( "promotion" ) )
+            Gui.game_information = game.turn + " to promote";
+
+        else if( !GameOver.is_game_over( game ) )
+            Gui.game_information = game.turn + " to move";
+
+        else
+            Gui.game_information = GameOver.get_game_over_status( game );
+
+        int half_text_width = MeasureText( Gui.game_information, Gui.font_size ) / 2;
+        DrawText(Gui.game_information, width / 2 - half_text_width, height - 50, Gui.font_size, WHITE);
     }
 }

@@ -9,7 +9,7 @@ public class Main {
 
         SetTargetFPS(144);
 
-        AntiChess.run("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 46 1");
+        AntiChess.run("8/5K2/8/8/8/8/5p2/8 b - - 45 1");
 
         CloseWindow();
     }
