@@ -66,28 +66,34 @@ public class Moves {
         return new int[] {};
     }
 
-    public static Game add_to_half_move_clock(Game game, int from_col, int from_row, int to_col, int to_row) {
+    public static Game update_clock(Game game, int from_col, int from_row, int to_col, int to_row) {
 
-        Game updated_half_move_clock = game.get_copy();
+        Game updated = game.get_copy();
 
         final char type = game.board[from_row][from_col];
 
-        System.out.println(type);
-
-
         // pawn move including en passant
         if( type == 'P' || type == 'p' )
-            updated_half_move_clock.half_move_clock = 0;
+            updated.half_move_clock = 0;
 
-        // capture
+            // capture
         else if( game.board[to_row][to_col] != ' ')
-            updated_half_move_clock.half_move_clock = 0;
+            updated.half_move_clock = 0;
 
-        // neither
+            // neither
         else
-            updated_half_move_clock.half_move_clock++;
+            updated.half_move_clock = updated.half_move_clock + 1;
 
-        return updated_half_move_clock;
+        return updated;
+    }
+
+    public static Game update_history(Game game, int from_col, int from_row, int to_col, int to_row) {
+
+        Game updated = game.get_copy();
+
+        updated.history.add( Notation.fen_without_clocks( updated ) );
+
+        return updated;
     }
 
     public static Game make_move(Game game, Move move) {
@@ -104,10 +110,9 @@ public class Moves {
         game_with_move.en_passant_square = new int[] {};
         game_with_move.en_passant_square = get_en_passant_square(game_with_move, from_col, from_row, to_col, to_row);
 
+        game_with_move = update_clock( game_with_move, from_col, from_row, to_col, to_row );
 
         char type = game_with_move.board[from_row][from_col];
-
-        game_with_move = add_to_half_move_clock( game_with_move, from_col, from_row, to_col, to_row );
 
         if( move.promote_to != ' ')
             type = move.promote_to;
@@ -125,7 +130,9 @@ public class Moves {
         else
             game_with_move.turn = "white";
 
-        System.out.println(Notation.fen( game_with_move ));
+        game_with_move = update_history( game_with_move, from_col, from_row, to_col, to_row );
+
+        System.out.println( Notation.fen( game_with_move));
 
         return game_with_move;
     }

@@ -25,6 +25,9 @@ public class Game {
     public int half_move_clock  = 0;
     public int full_move_number = 1;
 
+    // for five-fold repetition stores fen
+    ArrayList<String> history = new ArrayList<>();
+
     public String toString() {
 
         StringBuilder to_string = new StringBuilder();
@@ -50,6 +53,7 @@ public class Game {
         to_string.append( "half move clock: " ).append( this.half_move_clock ).append("\n");
         to_string.append( "full move number: " ).append( this.full_move_number ).append("\n");
 
+        to_string.append( "game over: " ).append( GameOver.get_game_over_status(this) ).append("\n");
 
         return to_string.toString();
     }
@@ -70,6 +74,8 @@ public class Game {
 
         copy.half_move_clock  = this.half_move_clock;
         copy.full_move_number = this.full_move_number;
+
+        copy.history = this.history;
 
         return copy;
     }

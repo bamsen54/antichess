@@ -107,4 +107,20 @@ public class Util {
 
         return square;
     }
+
+    public static boolean check_int_arr_equality(int[] array_1, int[] array_2) {
+
+        if( array_1.length != array_2.length )
+            return false;
+
+        for( int k = 0; k < array_1.length; k++ ) {
+
+            if( array_1[k] != array_2[k] )
+                return false;
+        }
+
+        return true;
+    }
+
+
 }

@@ -27,9 +27,7 @@ public class Notation {
                     }
 
                     fen_string.append(game.board[row][col]);
-
                 }
-
             }
 
             if( number_of_consecutive_empty_squares > 0 )
@@ -60,6 +58,25 @@ public class Notation {
 
 
         return fen_string.toString();
+    }
+
+    // e.g returns rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - -
+    // instead of  rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1
+    public static String fen_without_clocks(Game game) {
+
+        String full_fen = fen( game );
+
+        String[] fen_parts = full_fen.split(" ");
+
+        StringBuilder fen_without_clock = new StringBuilder();
+
+        for( int k = 0; k < fen_parts.length - 2; k++ )
+            fen_without_clock.append( fen_parts[k] ).append(" ");
+
+        // add one space at end so we remote it
+        fen_without_clock.deleteCharAt(fen_without_clock.length() - 1 );
+
+        return fen_without_clock.toString();
     }
 
     public static Game set_game_with_fen(String fen) {

@@ -24,9 +24,13 @@ public class AntiChess {
 
     static boolean flipped = false; // if board is flipped
 
-    public static void run() {
+    public static void run(String fen) {
 
-        Gui.square_size      = ( Math.min( width, height ) - 2 * vertical_margin ) /  8;
+        main_game = Notation.set_game_with_fen( fen );
+        main_game.history.add( Notation.fen_without_clocks( main_game ) );
+
+
+        Gui.square_size      = ( Math.min( width, height ) - vertical_margin - 100 ) /  8;
 
         // position of top left square
         Gui.board_position_x = width / 2 - 4 * Gui.square_size;
@@ -60,10 +64,12 @@ public class AntiChess {
 
         if( IsKeyPressed(KEY_SPACE) ) {
 
-            //String f = Notation.fen(main_game);
+            System.out.println("three-fold: " +  GameOver.check_threefold_repetition( main_game ) );
 
-            main_game = Notation.set_game_with_fen( "rnbqkb1r/ppp1pppp/7n/3pP3/8/8/PPPP1PPP/RNBQKBNR w - - 0 3" );
         }
+
+        if( !GameOver.get_game_over_status( main_game).isEmpty() )
+            System.out.println( GameOver.get_game_over_status( main_game ) );
 
         if( program_state.equals( "promotion" ) )
             Gui.display_promotion_choices( promotion_move );
