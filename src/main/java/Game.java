@@ -75,7 +75,9 @@ public class Game {
         copy.half_move_clock  = this.half_move_clock;
         copy.full_move_number = this.full_move_number;
 
-        copy.history = this.history;
+        copy.history.clear();
+
+        copy.history.addAll(this.history);
 
         return copy;
     }

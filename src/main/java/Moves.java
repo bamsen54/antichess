@@ -132,7 +132,6 @@ public class Moves {
 
         game_with_move = update_history( game_with_move, from_col, from_row, to_col, to_row );
 
-        System.out.println( Notation.fen( game_with_move));
 
         return game_with_move;
     }
@@ -182,7 +181,7 @@ public class Moves {
 
         ArrayList<Move> moves = new ArrayList<>();
 
-        for( int step = 1; step < 7; step++ ) {
+        for( int step = 1; step < 8; step++ ) {
 
             final int col_move = col + col_dir * step;
             final int row_move = row + row_dir * step;
@@ -305,7 +304,7 @@ public class Moves {
     // takes a move returns 5 different versions in an ArrayList with different
     // promote_to the different 5 pieces
     //
-    public static ArrayList<Move> get_move_list_with_all_promotions(Move move) {
+    public static ArrayList<Move> get_move_list_with_all_promotions(Game game, Move move) {
 
         Move promote_to_king   = move.get_copy();
         Move promote_to_queen  = move.get_copy();
@@ -313,11 +312,23 @@ public class Moves {
         Move promote_to_bishop = move.get_copy();
         Move promote_to_knight = move.get_copy();
 
-        promote_to_king.promote_to  = 'K';
-        promote_to_queen.promote_to = 'Q';
-        promote_to_rook.promote_to  = 'R';
-        promote_to_bishop.promote_to = 'B';
-        promote_to_knight.promote_to = 'N';
+        if( game.turn.equals( "white" ) ) {
+
+            promote_to_king.promote_to = 'K';
+            promote_to_queen.promote_to = 'Q';
+            promote_to_rook.promote_to = 'R';
+            promote_to_bishop.promote_to = 'B';
+            promote_to_knight.promote_to = 'N';
+        }
+
+        else {
+
+            promote_to_king.promote_to = 'k';
+            promote_to_queen.promote_to = 'q';
+            promote_to_rook.promote_to = 'r';
+            promote_to_bishop.promote_to = 'b';
+            promote_to_knight.promote_to = 'n';
+        }
 
 
         ArrayList<Move> all_promotions = new ArrayList<>();
@@ -364,7 +375,7 @@ public class Moves {
         if( Util.check_if_square_is_on_board( move_square ) && Util.check_square_is_empty(game,  move_square ) ) {
 
             if( Util.check_if_piece_is_on_back_rank( move_square ))
-                moves.addAll( get_move_list_with_all_promotions( standard_move ) );
+                moves.addAll( get_move_list_with_all_promotions( game, standard_move ) );
 
             else
                 moves.add( standard_move );
@@ -395,7 +406,7 @@ public class Moves {
                 left_move.capture = true;
 
                 if( row + forward_direction == 0 || row + forward_direction == 7 )
-                    moves.addAll( get_move_list_with_all_promotions( left_move ));
+                    moves.addAll( get_move_list_with_all_promotions( game,  left_move ));
 
                 else
                     moves.add( left_move );
@@ -418,7 +429,7 @@ public class Moves {
                 right_move.capture = true;
 
                 if( row + forward_direction == 0 || row + forward_direction == 7 )
-                    moves.addAll( get_move_list_with_all_promotions( right_move ));
+                    moves.addAll( get_move_list_with_all_promotions( game,  right_move ));
 
                 else
                     moves.add( right_move );
@@ -542,6 +553,8 @@ public class Moves {
     }
 
     public static ArrayList<Game> get_all_possible_boards_from_position(Game game, String color) {
+
+        game = game.get_copy();
 
         ArrayList<Game> games = new ArrayList<>();
 

@@ -1,9 +1,11 @@
 
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import static com.raylib.Colors.WHITE;
 import static com.raylib.Raylib.*;
+
 
 public class AntiChess {
 
@@ -23,6 +25,8 @@ public class AntiChess {
     final static int vertical_margin = 20;
 
     static boolean flipped = false; // if board is flipped
+
+    static boolean white_moved_this_frame = false;
 
     public static void run(String fen) {
 
@@ -49,29 +53,46 @@ public class AntiChess {
 
     public static void Loop() {
 
+        if( main_game.turn.equals("black") && !white_moved_this_frame ) {
+
+            Move m = Minimax.get_best_move( main_game, false );
+
+            if( m.to_col != - 1)
+                main_game = Moves.make_move( main_game, m);
+        }
+
+        white_moved_this_frame = false;
+
         DrawFPS(20, 20);
         Gui.draw_board();
-        Gui.display_en_passant_square( main_game );
+        Gui.display_en_passant_square(main_game);
         Gui.display_legal_moves();
-        Gui.draw_pieces( main_game );
-        Gui.draw_game_information( main_game );
+        Gui.draw_pieces(main_game);
+        Gui.draw_game_information(main_game);
 
         mouse_pressed();
 
-        if( IsKeyPressed(KEY_F) ) {
+        if (IsKeyPressed(KEY_F)) {
 
             flipped = !flipped;
         }
 
-        if( IsKeyPressed(KEY_SPACE) ) {
+        if (IsKeyPressed(KEY_SPACE)) {
 
-            System.out.println("space");
+            Move m = Minimax.get_best_move( main_game, true );
+
+            System.out.println( m );
         }
 
-        if( program_state.equals( "promotion" ) )
-            Gui.display_promotion_choices( promotion_move );
 
-        if( ActivePiece.type != ' ' ) {
+
+        if( IsKeyPressed(KEY_D))
+            System.out.println(main_game.history.size());
+
+        if (program_state.equals("promotion"))
+            Gui.display_promotion_choices(promotion_move);
+
+        if (ActivePiece.type != ' ') {
 
             int[] mouse_position = Raylib.mouse_position();
 
@@ -82,6 +103,23 @@ public class AntiChess {
 
             //Moves.get_pseudo_legal_moves(main_game, ActivePiece.col, ActivePiece.row);
         }
+
+        if (main_game.turn.equals("black")) {
+
+            ArrayList<Move> moves = Moves.get_all_legal_moves_for_color(main_game, "black");
+
+            Random r = new Random();
+            int N = moves.size();
+
+            Move move;
+
+            if(!moves.isEmpty()) {
+                move = moves.get((int)(r.nextFloat() * (N - 1)));
+                //main_game = Moves.make_move(main_game, move);
+
+            }
+        }
+
     }
 
     public static void start_piece_drag() {
@@ -192,6 +230,8 @@ public class AntiChess {
 
         if( GameOver.is_game_over( main_game ) && !program_state.equals("promotion") )
             program_state = "game over";
+
+        white_moved_this_frame = true;
     }
 
     public static void mouse_pressed() {

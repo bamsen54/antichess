@@ -9,6 +9,8 @@ public class GameOver {
     // if stalemated, then sufficient material is needed
     public static String check_win_by_no_move(Game game) {
 
+        game = game.get_copy();
+
         final String turn = game.turn;
 
         final ArrayList<Move> white_moves = Moves.get_all_legal_moves_for_color( game, "white" );
