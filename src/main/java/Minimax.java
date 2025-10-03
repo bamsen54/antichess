@@ -4,7 +4,7 @@ import java.util.ArrayList;
 public class Minimax {
 
     public static float minimax_timer    = 0;
-    public static float minimax_time_limit = 7000; // ms
+    public static float minimax_time_limit = 4500; // ms
     public static long time_at_start = - 1;
 
     public static int num_iter = 0;
@@ -177,3 +177,4 @@ public class Minimax {
         return best_move;
     }
 }
+
